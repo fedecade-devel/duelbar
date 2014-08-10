@@ -20,6 +20,11 @@ if (typeof fedecade == 'undefined') {
       bar_border_width: 1,
       bar_border_style: 'solid',
       bar_unit_type: 'px',
+      count_font: 'Arial, sans-serif',
+      count_size: '14px',
+      count_color: 'white',
+      count_margin: 15,
+      count_suffix: "人",
     };
 
     this.gparm = dparm;
@@ -45,20 +50,33 @@ if (typeof fedecade == 'undefined') {
     var rl = parm.width;
     var h = parm.height;
 
-    var lbar = this._draw_static_bar('#f542c8', lw, h, ll);
-    // var lbar = this._draw_static_bar('#f542c8', 400, 30, -400);
-    // var lbar = this._draw_static_bar('#f542c8', 400, 30, 0);
+    // var lbar = this._draw_static_bar('#f542c8', lw, h, ll);
+    // lbar.style.borderRight = 'none';
+    // this._animate(lbar, lw, ll, 'increase');
+    // frame.appendChild(lbar);
+    var lcount = this._create_count_box();
+    this._draw_count(lcount, 0);
+    var lbox_size = this._get_box_size(lcount, frame);
+    lcount.style.left = this._num_to_cssstr(parm.count_margin, 'px');
+    lcount.style.top = Math.floor((parm.height - lbox_size.h) / 2) + 'px';
+    // frame.appendChild(lcount);
+    var lbar = this._draw_static_bar('#f542c8', lw, h, ll, lcount);
     lbar.style.borderRight = 'none';
-    this._animate(lbar, lw, ll, 'increase');
-    // this._animate(lbar, 400, -400, 'increase');
-    // var rbar = this._draw_static_bar('#6542f5', 300, 30, 600);
-    // var rbar = this._draw_static_bar('#6542f5', 200, 30, 600);
-    var rbar = this._draw_static_bar('#6542f5', rw, h, rl);
-    rbar.style.borderLeft = 'none';
-    // this._animate(rbar, 200, 600, 'decrease');
-    this._animate(rbar, rw, rl, 'decrease');
+    this._animate(lbar, lw, ll, 'increase', lcount);
     frame.appendChild(lbar);
+    frame.appendChild(lcount);
+    
+    var rcount = this._create_count_box();
+    this._draw_count(rcount, 0);
+    var rbox_size = this._get_box_size(rcount, frame);
+    rcount.style.left = this._num_to_cssstr(parm.width - rbox_size.w - parm.count_margin, 'px');
+    rcount.style.top = Math.floor((parm.height - rbox_size.h) / 2) + 'px';
+    // frame.appendChild(rcount);
+    var rbar = this._draw_static_bar('#6542f5', rw, h, rl, rcount);
+    rbar.style.borderLeft = 'none';
+    this._animate(rbar, rw, rl, 'decrease', rcount);
     frame.appendChild(rbar);
+    frame.appendChild(rcount);
 
   };
 
@@ -83,7 +101,7 @@ if (typeof fedecade == 'undefined') {
     return number + suffix;
   }
 
-  prototype._animate = function(bar, width, left, direction) {
+  prototype._animate = function(bar, width, left, direction, cntbox) {
 
     var speed = 7;
     var from = 0;
@@ -109,6 +127,7 @@ if (typeof fedecade == 'undefined') {
             }
           }
           bar.style.left = (width * (100 - curper) / 100) * -1 + "px";
+          _this._draw_count(cntbox, curper);
           break;
         case 'decrease':
           if (curper > maxper) {
@@ -124,6 +143,7 @@ if (typeof fedecade == 'undefined') {
           }
           // bar.style.left = width + (width * (100 - curper) / 100) + "px";
           bar.style.left = left - width + (width * (100 - curper) / 100) + "px";
+          _this._draw_count(cntbox, curper);
           break;
       }
       if (curper != maxper) {
@@ -134,7 +154,7 @@ if (typeof fedecade == 'undefined') {
 
   };
 
-  prototype._draw_static_bar = function(color, width, height, left) {
+  prototype._draw_static_bar = function(color, width, height, left, cntbox) {
 
     var parm = this.gparm;
 
@@ -169,6 +189,8 @@ if (typeof fedecade == 'undefined') {
 
     bar.appendChild(canvas);
 
+    this._draw_count(cntbox, 0);
+    
     return bar;
 
   };
@@ -231,5 +253,35 @@ if (typeof fedecade == 'undefined') {
     yuv.y = yuv.y + gainrate * 256;
     return this._yuv_to_rgb(yuv);
   };
+
+  prototype._create_count_box = function() {
+    var parm = this.gparm;
+    var box = document.createElement('DIV');
+    box.style.margin = 0;
+    box.style.padding = 0;
+    box.style.position = 'absolute';
+    box.style.fontFamily = parm.count_font;
+    box.style.fontSize = parm.count_size;
+    box.style.color = parm.count_color;
+    return box;
+  }
+
+  prototype._draw_count = function(box, count) {
+    var cnt = count + this.gparm.count_suffix;
+    box.innerHTML = cnt;
+  }
+
+  prototype._get_box_size = function(box, frame) {
+    var vis = box.style.visible;
+    box.style.visible = "hidden";
+    frame.appendChild(box);
+    var sizes = {
+      w: box.offsetWidth,
+      h: box.offsetHeight,
+    };
+    frame.removeChild(box);
+    box.style.visible = vis;
+    return sizes;
+  }
 
 } ());
