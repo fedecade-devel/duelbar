@@ -13,10 +13,8 @@ if (typeof fedecade == 'undefined') {
      * grobal parmeters
      */
     var dparm = {
-      width: 600,
-      height: 30,
-      bar_width: 300,
-      bar_height: 30,
+      width: 1000,
+      height: 60,
       bar_border_width: 1,
       bar_border_style: 'solid',
       bar_unit_type: 'px',
@@ -29,6 +27,8 @@ if (typeof fedecade == 'undefined') {
     };
 
     this.gparm = dparm;
+
+		this.bar_draw_finished = {left: false, right: false};
     
   };
 
@@ -40,7 +40,7 @@ if (typeof fedecade == 'undefined') {
   prototype.draw = function(client, lval, rval) {
 
     var parm = this.gparm;
-
+		 
     var frame = this._create_barframe();
     client.appendChild(frame);
 
@@ -51,28 +51,23 @@ if (typeof fedecade == 'undefined') {
     var rl = parm.width;
     var h = parm.height;
 
-    // var lbar = this._draw_static_bar('#f542c8', lw, h, ll);
-    // lbar.style.borderRight = 'none';
-    // this._animate(lbar, lw, ll, 'increase');
-    // frame.appendChild(lbar);
+		var ptrfrm = this._create_pointerframe();
+		var ptr = this._create_pointer(lw);
+		ptrfrm.appendChild(ptr);
+		client.appendChild(ptrfrm);
+
     var lcount = this._create_count_box();
 		this._draw_count(lcount, lval);
     var lbox_size = this._get_box_size(lcount, frame);
 		var lcntpos = {left: parm.count_margin, top: Math.floor((parm.height - lbox_size.h) / 2)};
-    // lcount.style.left = this._num_to_cssstr(parm.count_margin, 'px');
-		// lcount.style.top = Math.floor((parm.height - lbox_size.h) / 2) + 'px';
     lcount.style.left = this._num_to_cssstr(lcntpos.left, 'px');
 		lcount.style.top = this._num_to_cssstr(lcntpos.top, 'px');
-		// var lshadow = this._create_shadowed_number(lcount, frame);
-    // frame.appendChild(lcount);
     var lbar = this._draw_static_bar('#f542c8', lw, h, ll, lcount);
     lbar.style.borderRight = 'none';
-    // this._animate(lbar, lw, ll, 'increase', lcount, lval, lshadow);
     frame.appendChild(lbar);
 		var lshadow = this._create_shadowed_number(lcount, frame, lcntpos);
 		frame.appendChild(lcount);
 		this._animate(lbar, lw, ll, 'increase', lcount, lval, lshadow);
-    // this._animate(lbar, lw, ll, 'increase', lcount, lval);
     
     var rcount = this._create_count_box();
 		this._draw_count(rcount, rval);
@@ -80,17 +75,108 @@ if (typeof fedecade == 'undefined') {
 		var rcntpos = {left: parm.width - rbox_size.w - parm.count_margin, top: Math.floor((parm.height - rbox_size.h) / 2)};
     rcount.style.left = this._num_to_cssstr(rcntpos.left, 'px');
 		rcount.style.top = this._num_to_cssstr(rcntpos.top, 'px');
-    // rcount.style.left = this._num_to_cssstr(parm.width - rbox_size.w - parm.count_margin, 'px');
-    // rcount.style.top = Math.floor((parm.height - rbox_size.h) / 2) + 'px';
-    // frame.appendChild(rcount);
     var rbar = this._draw_static_bar('#6542f5', rw, h, rl, rcount);
     rbar.style.borderLeft = 'none';
 		frame.appendChild(rbar);
 		var rshadow = this._create_shadowed_number(rcount, frame, rcntpos);
 		frame.appendChild(rcount);
 		this._animate(rbar, rw, rl, 'decrease', rcount, rval, rshadow);
-    // this._animate(rbar, rw, rl, 'decrease', rcount, rval);
 
+		this._slide_pointer(ptr);
+
+  };
+
+	prototype._create_pointer = function(position) {
+
+		var ptrimg = new Image();
+		ptrimg.src = './pointer.png';
+		ptrimg.style.position = 'relative';
+		ptrimg.style.width = '140px';
+		ptrimg.style.top = '-140px';
+		ptrimg.style.left = this._num_to_cssstr(position - 140 / 2, 'px');
+		// ptrimg.style.left = this._num_to_cssstr(0, 'px');
+		// ptrimg.style.left = '-140px';
+		// ptrimg.style.left = '300px';
+		
+		return ptrimg;
+	};
+
+	prototype._slide_pointer = function(ptr) {
+
+		var minpos = -40;
+		var curpos = -40;
+		var maxpos = 10;
+		var btmmgn = 10;
+		var delay = 1;//1.0755;
+		var fmt = this._num_to_cssstr;
+		var interval = 1;
+		var remain = 3;
+		var egd = [20, 0, 10];
+		var dly = [1.06, 1, 1.05];
+		var _this = this;
+
+		var fnd = function() {
+			if (remain == 0) { return; }
+			maxpos = egd[3-remain];
+			delay = dly[3-remain];
+			if (curpos < maxpos) {
+				curpos += 1;
+				if (curpos > maxpos) {
+					curpos = maxpos;
+				}
+			}
+			ptr.style.top = fmt(curpos, 'px');
+			if (curpos != maxpos) {
+				setTimeout(fnd, interval *= delay);
+			} else {
+				setTimeout(fnu, interval *= delay);
+				remain--;
+			}
+		};
+		var fnu = function() {
+			if (remain == 0) { return; }
+			minpos = egd[3-remain];
+			delay = dly[3-remain];
+			if (curpos > minpos) {
+				curpos -= 1;
+				if (curpos > minpos) {
+					curpos = minpos;
+				}
+			}
+			ptr.style.top = fmt(curpos, 'px');
+			if (curpos != minpos) {
+				setTimeout(fnu, interval *= delay);
+			} else {
+				setTimeout(fnd, interval *= delay);
+				remain--;
+			}
+		};
+
+		var boot = function() {
+			if (_this.bar_draw_finished.left == true && _this.bar_draw_finished.right == true) {
+				fnd();
+			} else {
+				setTimeout(boot, 10);
+			}
+		};
+
+		boot();
+	};
+
+  prototype._create_pointerframe = function() {
+
+    var frame = document.createElement('DIV'); 
+    
+    var parm = this.gparm;
+
+		frame.style.marginTop = '-100px';
+    frame.style.width = this._num_to_cssstr(parm.width, 'px');
+    frame.style.height = this._num_to_cssstr(50, 'px');
+    frame.style.position = 'relative';
+    // frame.style.overflow = 'hidden';
+    frame.style.border = 'none';
+
+    return frame;
   };
 
   prototype._create_barframe = function() {
@@ -99,6 +185,7 @@ if (typeof fedecade == 'undefined') {
     
     var parm = this.gparm;
 
+		frame.style.marginTop = '50px';
     frame.style.width = this._num_to_cssstr(parm.width, 'px');
     frame.style.height = this._num_to_cssstr(parm.height, 'px');
     frame.style.position = 'relative';
@@ -116,7 +203,7 @@ if (typeof fedecade == 'undefined') {
 
   prototype._animate = function(bar, width, left, direction, cntbox, val, shadow) {
 
-    var speed = 7;
+    var speed = 20;
     var from = 0;
     var to = 100;
 
@@ -161,6 +248,15 @@ if (typeof fedecade == 'undefined') {
       }
       if (curper != maxper) {
         setTimeout(fn, 10);
+			} else {
+				switch (direction) {
+					case 'increase':
+						_this.bar_draw_finished.left = true;
+						break;
+					case 'decrease':
+						_this.bar_draw_finished.right = true;
+						break;
+				}
       }
     }
     fn();
