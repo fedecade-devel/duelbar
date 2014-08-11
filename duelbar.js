@@ -24,6 +24,14 @@ if (typeof fedecade == 'undefined') {
       count_margin: 15,
       count_suffix: "人",
 			count_shadow_color: '#101010',
+			left_bar_color: '#f542c8',
+			right_bar_color: '#6542f5',
+			pointer_img: './pointer.png',
+			pointer_img_width: 140,
+			pointer_img_height: 55,
+			pointer_depth: 10,
+			background_color: '#C0C0C0',
+			bar_speed: 20,
     };
 
     this.gparm = dparm;
@@ -62,7 +70,7 @@ if (typeof fedecade == 'undefined') {
 		var lcntpos = {left: parm.count_margin, top: Math.floor((parm.height - lbox_size.h) / 2)};
     lcount.style.left = this._num_to_cssstr(lcntpos.left, 'px');
 		lcount.style.top = this._num_to_cssstr(lcntpos.top, 'px');
-    var lbar = this._draw_static_bar('#f542c8', lw, h, ll, lcount);
+    var lbar = this._draw_static_bar(parm.left_bar_color, lw, h, ll, lcount);
     lbar.style.borderRight = 'none';
     frame.appendChild(lbar);
 		var lshadow = this._create_shadowed_number(lcount, frame, lcntpos);
@@ -75,7 +83,7 @@ if (typeof fedecade == 'undefined') {
 		var rcntpos = {left: parm.width - rbox_size.w - parm.count_margin, top: Math.floor((parm.height - rbox_size.h) / 2)};
     rcount.style.left = this._num_to_cssstr(rcntpos.left, 'px');
 		rcount.style.top = this._num_to_cssstr(rcntpos.top, 'px');
-    var rbar = this._draw_static_bar('#6542f5', rw, h, rl, rcount);
+    var rbar = this._draw_static_bar(parm.right_bar_color, rw, h, rl, rcount);
     rbar.style.borderLeft = 'none';
 		frame.appendChild(rbar);
 		var rshadow = this._create_shadowed_number(rcount, frame, rcntpos);
@@ -88,30 +96,31 @@ if (typeof fedecade == 'undefined') {
 
 	prototype._create_pointer = function(position) {
 
+		var hide = '-1000px';
+		var ptrimg_w = this.gparm.pointer_img_width;
+		var ptrimg_h = this.gparm.pointer_img_height;
 		var ptrimg = new Image();
-		ptrimg.src = './pointer.png';
+		ptrimg.src = this.gparm.pointer_img;
 		ptrimg.style.position = 'relative';
-		ptrimg.style.width = '140px';
-		ptrimg.style.top = '-140px';
-		ptrimg.style.left = this._num_to_cssstr(position - 140 / 2, 'px');
-		// ptrimg.style.left = this._num_to_cssstr(0, 'px');
-		// ptrimg.style.left = '-140px';
-		// ptrimg.style.left = '300px';
+		ptrimg.style.width = this._num_to_cssstr(ptrimg_w, 'px');
+		ptrimg.style.height = this._num_to_cssstr(ptrimg_h, 'px');
+		ptrimg.style.top = hide;
+		ptrimg.style.left = this._num_to_cssstr(position - ptrimg_w / 2, 'px');
 		
 		return ptrimg;
 	};
 
 	prototype._slide_pointer = function(ptr) {
 
-		var minpos = -40;
-		var curpos = -40;
-		var maxpos = 10;
-		var btmmgn = 10;
-		var delay = 1;//1.0755;
+		var curpos = this.gparm.pointer_depth * -4;
+		var minpos = 0;
+		var maxpos = 0;
+		var delay = 0;
 		var fmt = this._num_to_cssstr;
 		var interval = 1;
 		var remain = 3;
-		var egd = [20, 0, 10];
+		// var egd = [20, 0, 10];
+		var egd = [this.gparm.pointer_depth * 2, 0, this.gparm.pointer_depth];
 		var dly = [1.06, 1, 1.05];
 		var _this = this;
 
@@ -169,11 +178,9 @@ if (typeof fedecade == 'undefined') {
     
     var parm = this.gparm;
 
-		frame.style.marginTop = '-100px';
+		frame.style.marginTop = this._num_to_cssstr((this.gparm.height + this.gparm.pointer_img_height - this.gparm.pointer_depth) * -1, 'px');
     frame.style.width = this._num_to_cssstr(parm.width, 'px');
-    frame.style.height = this._num_to_cssstr(50, 'px');
     frame.style.position = 'relative';
-    // frame.style.overflow = 'hidden';
     frame.style.border = 'none';
 
     return frame;
@@ -185,14 +192,14 @@ if (typeof fedecade == 'undefined') {
     
     var parm = this.gparm;
 
-		frame.style.marginTop = '50px';
+		frame.style.marginTop = this._num_to_cssstr(this.gparm.pointer_img_height, 'px');
     frame.style.width = this._num_to_cssstr(parm.width, 'px');
     frame.style.height = this._num_to_cssstr(parm.height, 'px');
     frame.style.position = 'relative';
     frame.style.overflow = 'hidden';
     frame.style.borderWidth = parm.frame_border_width + parm.frame_unit_type;
     frame.style.borderStyle = parm.frame_border_style;
-    frame.style.backgroundColor = '#C0C0C0';
+    frame.style.backgroundColor = this.gparm.background_color;
 
     return frame;
   };
@@ -203,7 +210,7 @@ if (typeof fedecade == 'undefined') {
 
   prototype._animate = function(bar, width, left, direction, cntbox, val, shadow) {
 
-    var speed = 20;
+    var speed = this.gparm.bar_speed;
     var from = 0;
     var to = 100;
 
