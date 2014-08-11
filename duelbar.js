@@ -1,4 +1,4 @@
-if (typeof fedecade == 'undefined') {
+if (typeof(fedecade) == 'undefined') {
   fedecade = new Object();
 }
 
@@ -34,6 +34,10 @@ if (typeof fedecade == 'undefined') {
 			pointer_depth: 10,
 			background_color: '#C0C0C0',
 			bar_speed: 20,
+			bar_efect: 'gradient',
+			animation: false,
+			// pointer_fall_speed: [1.06, 1, 1.05]
+			pointer_fall_speed: [0.90, 0.75, 0.59]
     };
 
     this.gparm = dparm;
@@ -59,6 +63,12 @@ if (typeof fedecade == 'undefined') {
 			}
 			if (typeof(param.border_color) != 'undefined') {
 				this.gparm.frame_border_color = param.border_color;
+			}
+			if (typeof(param.bar_efect) != 'undefined') {
+				this.gparm.bar_efect = param.bar_efect;
+			}
+			if (typeof(param.animation) != 'undefined') {
+				this.gparm.animation = param.animation;
 			}
 		}
 
@@ -99,11 +109,14 @@ if (typeof fedecade == 'undefined') {
     lcount.style.left = this._num_to_cssstr(lcntpos.left, 'px');
 		lcount.style.top = this._num_to_cssstr(lcntpos.top, 'px');
     var lbar = this._draw_static_bar(parm.left_bar_color, lw, h, ll, lcount);
-    // lbar.style.borderRight = 'none';
     frame.appendChild(lbar);
 		var lshadow = this._create_shadowed_number(lcount, frame, lcntpos);
 		frame.appendChild(lcount);
-		this._animate(lbar, lw, ll, 'increase', lcount, lval, lshadow);
+		if (parm.animation) {
+			this._animate(lbar, lw, ll, 'increase', lcount, lval, lshadow);
+		} else {
+			lbar.style.left = this._num_to_cssstr(0, 'px');
+		}
     
     var rcount = this._create_count_box();
 		this._draw_count(rcount, rval);
@@ -112,13 +125,20 @@ if (typeof fedecade == 'undefined') {
     rcount.style.left = this._num_to_cssstr(rcntpos.left, 'px');
 		rcount.style.top = this._num_to_cssstr(rcntpos.top, 'px');
     var rbar = this._draw_static_bar(parm.right_bar_color, rw, h, rl, rcount);
-    // rbar.style.borderLeft = 'none';
 		frame.appendChild(rbar);
 		var rshadow = this._create_shadowed_number(rcount, frame, rcntpos);
 		frame.appendChild(rcount);
-		this._animate(rbar, rw, rl, 'decrease', rcount, rval, rshadow);
+		if (parm.animation) {
+			this._animate(rbar, rw, rl, 'decrease', rcount, rval, rshadow);
+		} else {
+			rbar.style.left = this._num_to_cssstr(lw, 'px');
+		}
 
-		this._slide_pointer(ptr);
+		if (parm.animation) {
+			this._slide_pointer(ptr);
+		} else {
+			ptr.style.top = 0;
+		}
 
   };
 
@@ -147,9 +167,8 @@ if (typeof fedecade == 'undefined') {
 		var fmt = this._num_to_cssstr;
 		var interval = 1;
 		var remain = 3;
-		// var egd = [20, 0, 10];
-		var egd = [this.gparm.pointer_depth * 2, 0, this.gparm.pointer_depth];
-		var dly = [1.06, 1, 1.05];
+		var egd = [this.gparm.pointer_depth * 1.5, this.gparm.pointer_depth * -0.5, 0];
+		var dly = this.gparm.pointer_fall_speed;
 		var _this = this;
 
 		var fnd = function() {
@@ -313,25 +332,36 @@ if (typeof fedecade == 'undefined') {
     // bar.style.borderStyle = parm.bar_border_style;
     bar.style.float = 'left';
 
-    var canvas = document.createElement('CANVAS');
-    canvas.width = width;
-    canvas.height = height;
-    var ctx = canvas.getContext('2d');
-    ctx.beginPath();
-    var baseColor = this._colorcode_to_rgb(color);
-    var color1 = this._rgb_to_cssformat(this._lighten_rgb(baseColor, -0.15));
-    var color2 = this._rgb_to_cssformat(this._lighten_rgb(baseColor, 0));
-    var color3 = this._rgb_to_cssformat(this._lighten_rgb(baseColor, 0.15));
-    var grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0.0, color1);
-    grad.addColorStop(0.4, color2);
-    grad.addColorStop(1.0, color3);
-    ctx.fillStyle = grad;
-    // ctx.rect(0, 0, parm.bar_width, parm.bar_height);
-    ctx.rect(0, 0, width, height);
-    ctx.fill();
-
-    bar.appendChild(canvas);
+		if (parm.bar_efect == 'gradient') {
+			var canvas = document.createElement('CANVAS');
+			if (canvas && canvas.getContext) {
+				canvas.width = width;
+				canvas.height = height;
+				bar.appendChild(canvas);
+				var ctx = canvas.getContext('2d');
+				ctx.beginPath();
+				var baseColor = this._colorcode_to_rgb(color);
+				var color1 = this._rgb_to_cssformat(this._lighten_rgb(baseColor, -0.15));
+				var color2 = this._rgb_to_cssformat(this._lighten_rgb(baseColor, 0));
+				var color3 = this._rgb_to_cssformat(this._lighten_rgb(baseColor, 0.15));
+				var grad = ctx.createLinearGradient(0, 0, 0, height);
+				grad.addColorStop(0.0, color1);
+				grad.addColorStop(0.4, color2);
+				grad.addColorStop(1.0, color3);
+				ctx.fillStyle = grad;
+				ctx.rect(0, 0, width, height);
+				ctx.fill();
+			} else if (document.uniqueID) {
+				var baseColor = this._colorcode_to_rgb(color);
+				var color1 = this._rgb_to_csshexformat(this._lighten_rgb(baseColor, -0.15));
+				var color2 = this._rgb_to_csshexformat(this._lighten_rgb(baseColor, 0.15));
+				bar.style.filter = "progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr=" + color2 + ",EndColorStr=" + color1 + ")";
+			} else {
+				bar.style.backgroundColor = color;
+			}
+		} else {
+			bar.style.backgroundColor = color;
+		}
 
     // this._draw_count(cntbox, 0, shadow);
     
@@ -362,17 +392,30 @@ if (typeof fedecade == 'undefined') {
     return cssfmt;
   };
 
+	prototype._rgb_to_csshexformat = function(rgb) {
+		var hex = {
+			r: rgb.r.toString(16),
+			g: rgb.g.toString(16),
+			b: rgb.b.toString(16)
+		};
+		if (hex.r.length == 1) { hex.r = '0' + hex.r;}
+		if (hex.g.length == 1) { hex.g = '0' + hex.g;}
+		if (hex.b.length == 1) { hex.b = '0' + hex.b;}
+		return '#' + hex.r + hex.g + hex.b;
+
+	};
+
   prototype._rgb_to_yuv = function(rgb) {
     var r = {
       y: {r:  0.299, g:  0.587,  b:  0.144}, 
       u: {r: -0.169, g: -0.3316, b:  0.500}, 
-      v: {r:  0.500, g: -0.4186, b: -0.0813},
+      v: {r:  0.500, g: -0.4186, b: -0.0813}
     };
 
     return {
       y: parseInt(r.y.r * rgb.r + r.y.g * rgb.g + r.y.b * rgb.b),
       u: parseInt(r.u.r * rgb.r + r.u.g * rgb.g + r.u.b * rgb.b),
-      v: parseInt(r.v.r * rgb.r + r.v.g * rgb.g + r.v.b * rgb.b),
+      v: parseInt(r.v.r * rgb.r + r.v.g * rgb.g + r.v.b * rgb.b)
     };
   };
 
@@ -380,7 +423,7 @@ if (typeof fedecade == 'undefined') {
     var rgb = {
       r: parseInt(yuv.y + 1.402 * yuv.v),
       g: parseInt(yuv.y - 0.714 * yuv.v - 0.344 * yuv.u),
-      b: parseInt(yuv.y + 1.772 * yuv.u),
+      b: parseInt(yuv.y + 1.772 * yuv.u)
     };
     for (var el in rgb) {
       if (rgb[el] > 255) {
@@ -427,7 +470,7 @@ if (typeof fedecade == 'undefined') {
     frame.appendChild(box);
     var sizes = {
       w: box.offsetWidth,
-      h: box.offsetHeight,
+      h: box.offsetHeight
     };
     frame.removeChild(box);
     box.style.visible = vis;
