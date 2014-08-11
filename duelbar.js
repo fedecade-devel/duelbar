@@ -21,10 +21,11 @@ if (typeof fedecade == 'undefined') {
       bar_border_style: 'solid',
       bar_unit_type: 'px',
       count_font: 'Arial, sans-serif',
-      count_size: '14px',
+      count_size: '20px',
       count_color: 'white',
       count_margin: 15,
       count_suffix: "人",
+			count_shadow_color: '#101010',
     };
 
     this.gparm = dparm;
@@ -55,28 +56,40 @@ if (typeof fedecade == 'undefined') {
     // this._animate(lbar, lw, ll, 'increase');
     // frame.appendChild(lbar);
     var lcount = this._create_count_box();
-    this._draw_count(lcount, 0);
+		this._draw_count(lcount, lval);
     var lbox_size = this._get_box_size(lcount, frame);
-    lcount.style.left = this._num_to_cssstr(parm.count_margin, 'px');
-    lcount.style.top = Math.floor((parm.height - lbox_size.h) / 2) + 'px';
+		var lcntpos = {left: parm.count_margin, top: Math.floor((parm.height - lbox_size.h) / 2)};
+    // lcount.style.left = this._num_to_cssstr(parm.count_margin, 'px');
+		// lcount.style.top = Math.floor((parm.height - lbox_size.h) / 2) + 'px';
+    lcount.style.left = this._num_to_cssstr(lcntpos.left, 'px');
+		lcount.style.top = this._num_to_cssstr(lcntpos.top, 'px');
+		// var lshadow = this._create_shadowed_number(lcount, frame);
     // frame.appendChild(lcount);
     var lbar = this._draw_static_bar('#f542c8', lw, h, ll, lcount);
     lbar.style.borderRight = 'none';
-    this._animate(lbar, lw, ll, 'increase', lcount);
+    // this._animate(lbar, lw, ll, 'increase', lcount, lval, lshadow);
     frame.appendChild(lbar);
-    frame.appendChild(lcount);
+		var lshadow = this._create_shadowed_number(lcount, frame, lcntpos);
+		frame.appendChild(lcount);
+		this._animate(lbar, lw, ll, 'increase', lcount, lval, lshadow);
+    // this._animate(lbar, lw, ll, 'increase', lcount, lval);
     
     var rcount = this._create_count_box();
-    this._draw_count(rcount, 0);
+		this._draw_count(rcount, rval);
     var rbox_size = this._get_box_size(rcount, frame);
-    rcount.style.left = this._num_to_cssstr(parm.width - rbox_size.w - parm.count_margin, 'px');
-    rcount.style.top = Math.floor((parm.height - rbox_size.h) / 2) + 'px';
+		var rcntpos = {left: parm.width - rbox_size.w - parm.count_margin, top: Math.floor((parm.height - rbox_size.h) / 2)};
+    rcount.style.left = this._num_to_cssstr(rcntpos.left, 'px');
+		rcount.style.top = this._num_to_cssstr(rcntpos.top, 'px');
+    // rcount.style.left = this._num_to_cssstr(parm.width - rbox_size.w - parm.count_margin, 'px');
+    // rcount.style.top = Math.floor((parm.height - rbox_size.h) / 2) + 'px';
     // frame.appendChild(rcount);
     var rbar = this._draw_static_bar('#6542f5', rw, h, rl, rcount);
     rbar.style.borderLeft = 'none';
-    this._animate(rbar, rw, rl, 'decrease', rcount);
-    frame.appendChild(rbar);
-    frame.appendChild(rcount);
+		frame.appendChild(rbar);
+		var rshadow = this._create_shadowed_number(rcount, frame, rcntpos);
+		frame.appendChild(rcount);
+		this._animate(rbar, rw, rl, 'decrease', rcount, rval, rshadow);
+    // this._animate(rbar, rw, rl, 'decrease', rcount, rval);
 
   };
 
@@ -101,7 +114,7 @@ if (typeof fedecade == 'undefined') {
     return number + suffix;
   }
 
-  prototype._animate = function(bar, width, left, direction, cntbox) {
+  prototype._animate = function(bar, width, left, direction, cntbox, val, shadow) {
 
     var speed = 7;
     var from = 0;
@@ -127,7 +140,7 @@ if (typeof fedecade == 'undefined') {
             }
           }
           bar.style.left = (width * (100 - curper) / 100) * -1 + "px";
-          _this._draw_count(cntbox, curper);
+          _this._draw_count(cntbox, Math.floor(curper * val / 100), shadow);
           break;
         case 'decrease':
           if (curper > maxper) {
@@ -143,7 +156,7 @@ if (typeof fedecade == 'undefined') {
           }
           // bar.style.left = width + (width * (100 - curper) / 100) + "px";
           bar.style.left = left - width + (width * (100 - curper) / 100) + "px";
-          _this._draw_count(cntbox, curper);
+          _this._draw_count(cntbox, Math.floor(curper * val / 100), shadow);
           break;
       }
       if (curper != maxper) {
@@ -189,7 +202,7 @@ if (typeof fedecade == 'undefined') {
 
     bar.appendChild(canvas);
 
-    this._draw_count(cntbox, 0);
+    // this._draw_count(cntbox, 0, shadow);
     
     return bar;
 
@@ -263,13 +276,19 @@ if (typeof fedecade == 'undefined') {
     box.style.fontFamily = parm.count_font;
     box.style.fontSize = parm.count_size;
     box.style.color = parm.count_color;
+		// box.style.textShadow = "0 1px 1px #101010, 1px 0 1px #101010, 0 -1px 1px #101010, -1px 0 1px #101010, -1px -1px 1px #101010, 1px -1px 1px #101010, -1px 1px 1px #101010, 1px 1px 1px #101010";
     return box;
-  }
+  };
 
-  prototype._draw_count = function(box, count) {
-    var cnt = count + this.gparm.count_suffix;
-    box.innerHTML = cnt;
-  }
+  prototype._draw_count = function(box, count, shadow) {
+		var cnt = this._num_to_separated_str(count, ',', this.gparm.count_suffix);
+		if (typeof(shadow) != 'undefined') {
+			for (var i = 0; i < shadow.length; i++) {
+				shadow[i].innerHTML = cnt;
+			}
+		}
+		box.innerHTML = cnt;
+  };
 
   prototype._get_box_size = function(box, frame) {
     var vis = box.style.visible;
@@ -282,6 +301,32 @@ if (typeof fedecade == 'undefined') {
     frame.removeChild(box);
     box.style.visible = vis;
     return sizes;
-  }
+  };
+
+	prototype._num_to_separated_str = function(num, delim, suffix) {
+		var sep = String(num);
+		return sep.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + delim) + suffix;
+	};	
+
+	prototype._create_shadowed_number = function(cntbox, frame, cntpos) {
+		var parm = this.gparm;
+		// var diff = [[0,1],[0,-1],[1,0],[1,1],[1,-1],[-1,0],[-1,1],[-1,-1]];
+		var diff = [[0,1.5],[0,-1.5],[1.5,0],[1.5,1.5],[1.5,-1.5],[-1.5,0],[-1.5,1.5],[-1.5,-1.5]];
+		var cntshadow = [];
+		for (var i = 0; i < diff.length; i++) {
+			var shadow = cntbox.cloneNode(true);
+			shadow.style.margin = '0px';
+			shadow.style.padding = '0px';
+			shadow.style.position = 'absolute';
+			shadow.style.color = parm.count_shadow_color;
+			shadow.style.fontFamily = parm.count_font;
+			shadow.style.fontSize = parm.count_size;
+			shadow.style.left = (cntpos.left + diff[i][0]) + 'px';
+			shadow.style.top = (cntpos.top + diff[i][1]) + 'px';
+			frame.appendChild(shadow);
+			cntshadow.push(shadow);
+		}
+		return cntshadow;
+	};
 
 } ());
