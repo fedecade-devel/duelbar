@@ -4,13 +4,23 @@
 <script type="text/javascript" src="./duelbar.js" charset="utf-8"></script>
 <script type="text/javascript">
 window.onload=function() {
-  var node = document.getElementById("sample");
-  var duelbar = new fedecade.duelbar(); 
-  duelbar.draw(node, 5231, 590);
+  var duelbar = new fedecade.duelbar(
+			"duelbar",
+			{
+			width: 800,
+			height: 60,
+			leftbar_color: '#CC0000',
+			rightbar_color: '#339933',
+			count_size: '22px',
+			border_width: '2px',
+			border_color: '#333333',
+			}
+			); 
+  duelbar.draw(1, 3);
 }
 </script>
 </head>
 <body>
-  <div id="sample"></div>
+  <div id="duelbar"></div>
 </body>
 </html>

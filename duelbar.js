@@ -7,7 +7,9 @@ if (typeof fedecade == 'undefined') {
   /***
    * constructor
    */
-  fedecade.duelbar = function() {
+  fedecade.duelbar = function(container, param) {
+
+		this.container = document.getElementById(container);
 
     /**
      * grobal parmeters
@@ -15,9 +17,9 @@ if (typeof fedecade == 'undefined') {
     var dparm = {
       width: 1000,
       height: 60,
-      bar_border_width: 1,
-      bar_border_style: 'solid',
-      bar_unit_type: 'px',
+      frame_border_width: '1px',
+			frame_border_color: '#101010',
+      frame_border_style: 'solid',
       count_font: 'Arial, sans-serif',
       count_size: '20px',
       count_color: 'white',
@@ -36,6 +38,30 @@ if (typeof fedecade == 'undefined') {
 
     this.gparm = dparm;
 
+		if (typeof(param) != 'undefined') {
+			if (typeof(param.width) != 'undefined') {
+				this.gparm.width = param.width;
+			}
+			if (typeof(param.height) != 'undefined') {
+				this.gparm.height = param.height;
+			}
+			if (typeof(param.leftbar_color) != 'undefined') {
+				this.gparm.left_bar_color = param.leftbar_color;
+			}
+			if (typeof(param.rightbar_color) != 'undefined') {
+				this.gparm.right_bar_color = param.rightbar_color;
+			}
+			if (typeof(param.count_size) != 'undefined') {
+				this.gparm.count_size = param.count_size;
+			}
+			if (typeof(param.border_width) != 'undefined') {
+				this.gparm.frame_border_width = param.border_width;
+			}
+			if (typeof(param.border_color) != 'undefined') {
+				this.gparm.frame_border_color = param.border_color;
+			}
+		}
+
 		this.bar_draw_finished = {left: false, right: false};
     
   };
@@ -45,7 +71,9 @@ if (typeof fedecade == 'undefined') {
    */
   var prototype = fedecade.duelbar.prototype;
 
-  prototype.draw = function(client, lval, rval) {
+  prototype.draw = function(lval, rval) {
+
+		var client = this.container;
 
     var parm = this.gparm;
 		 
@@ -71,7 +99,7 @@ if (typeof fedecade == 'undefined') {
     lcount.style.left = this._num_to_cssstr(lcntpos.left, 'px');
 		lcount.style.top = this._num_to_cssstr(lcntpos.top, 'px');
     var lbar = this._draw_static_bar(parm.left_bar_color, lw, h, ll, lcount);
-    lbar.style.borderRight = 'none';
+    // lbar.style.borderRight = 'none';
     frame.appendChild(lbar);
 		var lshadow = this._create_shadowed_number(lcount, frame, lcntpos);
 		frame.appendChild(lcount);
@@ -84,7 +112,7 @@ if (typeof fedecade == 'undefined') {
     rcount.style.left = this._num_to_cssstr(rcntpos.left, 'px');
 		rcount.style.top = this._num_to_cssstr(rcntpos.top, 'px');
     var rbar = this._draw_static_bar(parm.right_bar_color, rw, h, rl, rcount);
-    rbar.style.borderLeft = 'none';
+    // rbar.style.borderLeft = 'none';
 		frame.appendChild(rbar);
 		var rshadow = this._create_shadowed_number(rcount, frame, rcntpos);
 		frame.appendChild(rcount);
@@ -197,7 +225,8 @@ if (typeof fedecade == 'undefined') {
     frame.style.height = this._num_to_cssstr(parm.height, 'px');
     frame.style.position = 'relative';
     frame.style.overflow = 'hidden';
-    frame.style.borderWidth = parm.frame_border_width + parm.frame_unit_type;
+    frame.style.borderWidth = parm.frame_border_width;
+    frame.style.borderColor = parm.frame_border_color;
     frame.style.borderStyle = parm.frame_border_style;
     frame.style.backgroundColor = this.gparm.background_color;
 
@@ -277,12 +306,11 @@ if (typeof fedecade == 'undefined') {
     var bar = document.createElement('DIV');
 
     bar.style.width = this._num_to_cssstr(width, 'px');
-    bar.style.height = this._num_to_cssstr(height, 'px');
+    bar.style.height = this._num_to_cssstr(100, '%');
     bar.style.position = 'absolute';
     bar.style.left = this._num_to_cssstr(left, 'px');
-    // bar.style.overflow = 'hidden';
-    bar.style.borderWidth = parm.bar_border_width + parm.bar_unit_type;
-    bar.style.borderStyle = parm.bar_border_style;
+    // bar.style.borderWidth = parm.bar_border_width + parm.bar_unit_type;
+    // bar.style.borderStyle = parm.bar_border_style;
     bar.style.float = 'left';
 
     var canvas = document.createElement('CANVAS');
