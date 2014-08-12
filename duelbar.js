@@ -51,7 +51,8 @@ if (typeof(fedecade) == 'undefined') {
 			pointer_fall_speed: [0.05, 0.75, 0.59],
 			gradient_lightness: [-0.15, 0, 0.15],
 			gradient_position: [0.0, 0.4, 1.0],
-			pointer_frame_width: 0
+			pointer_frame_width: 0,
+			shadow: false
     };
 
     /**
@@ -92,6 +93,9 @@ if (typeof(fedecade) == 'undefined') {
 			}
 			if (typeof(param.animation) != 'undefined') {
 				this.global_params.animation = param.animation;
+			}
+			if (typeof(param.shadow) != 'undefined') {
+				this.global_params.shadow = param.shadow;
 			}
 		}
 
@@ -147,15 +151,23 @@ if (typeof(fedecade) == 'undefined') {
 
 			/* left bar */
 			var left_counts = this._prepare_left_static_count(bar_frame, this.left_bar_prop);
-			var left_bar = this._slide_animated_left_bar(this._draw_static_bar(this.left_bar_prop), this.left_bar_prop, left_counts.counter);
+			var left_bar = this._slide_animated_left_bar(this._draw_static_bar(this.left_bar_prop), this.left_bar_prop, left_counts.counter, left_counts.shadowed_counter);
 			bar_frame.appendChild(left_bar);
+			if (param.shadow) {
+				bar_frame.appendChildlen(left_counts.shadowed_counter);
+				bar_frame.appendChildlen(left_counts.shadowed_counter_suffix);
+			}
 			bar_frame.appendChild(left_counts.counter);
 			bar_frame.appendChild(left_counts.suffix);
 
 			/* right bar */
 			var right_counts = this._prepare_right_static_count(bar_frame, this.right_bar_prop);
-			var right_bar = this._slide_animated_right_bar(this._draw_static_bar(this.right_bar_prop), this.right_bar_prop, right_counts.counter);
+			var right_bar = this._slide_animated_right_bar(this._draw_static_bar(this.right_bar_prop), this.right_bar_prop, right_counts.counter, right_counts.shadowed_counter);
 			bar_frame.appendChild(right_bar);
+			if (param.shadow) {
+				bar_frame.appendChildlen(right_counts.shadowed_counter);
+				bar_frame.appendChildlen(right_counts.shadowed_counter_suffix);
+			}
 			bar_frame.appendChild(right_counts.counter);
 			bar_frame.appendChild(right_counts.suffix);
 
@@ -164,74 +176,31 @@ if (typeof(fedecade) == 'undefined') {
 			pointer_frame.appendChild(pointer);
 
 		} else {
+
 			bar_frame.appendChild(this._draw_static_bar(this.left_bar_prop));
 			bar_frame.appendChild(this._draw_static_bar(this.right_bar_prop));
-			this._draw_static_count(bar_frame, this.left_bar_prop, this.right_bar_prop);
+
+			var left_counts = this._prepare_left_static_count(bar_frame, this.left_bar_prop);
+			if (param.shadow) {
+				bar_frame.appendChildlen(left_counts.shadowed_counter);
+				bar_frame.appendChildlen(left_counts.shadowed_counter_suffix);
+			}
+			bar_frame.appendChild(left_counts.counter);
+			bar_frame.appendChild(left_counts.suffix);
+
+			var right_counts = this._prepare_right_static_count(bar_frame, this.right_bar_prop);
+			if (param.shadow) {
+				bar_frame.appendChildlen(right_counts.shadowed_counter);
+				bar_frame.appendChildlen(right_counts.shadowed_counter_suffix);
+			}
+			bar_frame.appendChild(right_counts.counter);
+			bar_frame.appendChild(right_counts.suffix);
+
 			pointer_frame.appendChild(this._draw_static_pointer(param.pointer_img_top_margin));
+
 		}
 
 	};
-
-  prototype.draw2 = function(lval, rval) {
-
-		var client = this.container;
-
-    var parm = this.global_params;
-		 
-    var frame = this._create_barframe();
-    client.appendChild(frame);
-
-    var tval = lval + rval;
-    var lw = Math.floor(parm.width * lval / tval);
-    var rw = parm.width - lw;
-    var ll = lw * -1;
-    var rl = parm.width;
-    var h = parm.height;
-
-		var ptrfrm = this._create_pointerframe();
-		var ptr = this._create_pointer2(lw);
-		ptrfrm.appendChild(ptr);
-		client.appendChild(ptrfrm);
-
-    var lcount = this._create_count_box();
-		this._draw_count(lcount, lval);
-    var lbox_size = this._get_box_size(lcount, frame);
-		var lcntpos = {left: parm.count_margin, top: Math.floor((parm.height - lbox_size.h) / 2)};
-    lcount.style.left = this._num_to_cssstr(lcntpos.left, 'px');
-		lcount.style.top = this._num_to_cssstr(lcntpos.top, 'px');
-    var lbar = this._draw_static_bar(parm.left_bar_color, lw, h, ll, lcount);
-    frame.appendChild(lbar);
-		var lshadow = this._create_shadowed_number(lcount, frame, lcntpos);
-		frame.appendChild(lcount);
-		if (parm.animation) {
-			this._animate(lbar, lw, ll, 'increase', lcount, lval, lshadow);
-		} else {
-			lbar.style.left = this._num_to_cssstr(0, 'px');
-		}
-    
-    var rcount = this._create_count_box();
-		this._draw_count(rcount, rval);
-    var rbox_size = this._get_box_size(rcount, frame);
-		var rcntpos = {left: parm.width - rbox_size.w - parm.count_margin, top: Math.floor((parm.height - rbox_size.h) / 2)};
-    rcount.style.left = this._num_to_cssstr(rcntpos.left, 'px');
-		rcount.style.top = this._num_to_cssstr(rcntpos.top, 'px');
-    var rbar = this._draw_static_bar(parm.right_bar_color, rw, h, rl, rcount);
-		frame.appendChild(rbar);
-		var rshadow = this._create_shadowed_number(rcount, frame, rcntpos);
-		frame.appendChild(rcount);
-		if (parm.animation) {
-			this._animate(rbar, rw, rl, 'decrease', rcount, rval, rshadow);
-		} else {
-			rbar.style.left = this._num_to_cssstr(lw, 'px');
-		}
-
-		if (parm.animation) {
-			this._slide_pointer2(ptr);
-		} else {
-			ptr.style.top = 0;
-		}
-
-  };
 
 	/***
 	 * private methods
@@ -280,6 +249,12 @@ if (typeof(fedecade) == 'undefined') {
     frame.style.borderColor = param.frame_border_color;
     frame.style.borderStyle = param.frame_border_style;
     frame.style.backgroundColor = this.global_params.background_color;
+
+		frame.appendChildlen = function(childlen) {
+			for (var i = 0; i < childlen.length; i++) {
+				frame.appendChild(childlen[i]);
+			}
+		};
 
     return frame;
 
@@ -378,65 +353,65 @@ if (typeof(fedecade) == 'undefined') {
 
 	}
 
-	prototype._draw_static_count = function(frame, left_bar_prop, right_bar_prop) {
+	// prototype._draw_static_count = function(frame, left_bar_prop, right_bar_prop) {
 
-		var param = this.global_params;
-		var _this = this;
+		// var param = this.global_params;
+		// var _this = this;
 
-		var lfn = function() {
+		// var lfn = function() {
 
-			var counter = _this._create_counter_box();
-			counter.innerHTML = _this._num_to_separated_str(left_bar_prop.value, ',');
-			var counter_size = _this._calcualte_box_size(counter, frame);
+			// var counter = _this._create_counter_box();
+			// counter.innerHTML = _this._num_to_separated_str(left_bar_prop.value, ',');
+			// var counter_size = _this._calcualte_box_size(counter, frame);
 			
-			var suffix = _this._create_counter_suffix_box();
-			suffix.innerHTML = param.count_suffix;
-			var suffix_size = _this._calcualte_box_size(suffix, frame);
+			// var suffix = _this._create_counter_suffix_box();
+			// suffix.innerHTML = param.count_suffix;
+			// var suffix_size = _this._calcualte_box_size(suffix, frame);
 
-			var counter_top = Math.floor((param.height - counter_size.height) / 2);
-			var counter_left = param.count_margin;
-			counter.style.top = _this._to_pixcel_num_str(counter_top);
-			counter.style.left = _this._to_pixcel_num_str(counter_left);
+			// var counter_top = Math.floor((param.height - counter_size.height) / 2);
+			// var counter_left = param.count_margin;
+			// counter.style.top = _this._to_pixcel_num_str(counter_top);
+			// counter.style.left = _this._to_pixcel_num_str(counter_left);
 
-			var suffix_top = counter_size.height - suffix_size.height + counter_top;
-			var suffix_left = counter_size.width + counter_left + param.count_suffix_margin
-			suffix.style.top = _this._to_pixcel_num_str(suffix_top);
-			suffix.style.left = _this._to_pixcel_num_str(suffix_left);
+			// var suffix_top = counter_size.height - suffix_size.height + counter_top;
+			// var suffix_left = counter_size.width + counter_left + param.count_suffix_margin
+			// suffix.style.top = _this._to_pixcel_num_str(suffix_top);
+			// suffix.style.left = _this._to_pixcel_num_str(suffix_left);
 
-			frame.appendChild(counter);
-			frame.appendChild(suffix);
+			// frame.appendChild(counter);
+			// frame.appendChild(suffix);
 
-		};
+		// };
 
-		var rfn = function() {
+		// var rfn = function() {
 
-			var counter = _this._create_counter_box();
-			counter.innerHTML = _this._num_to_separated_str(right_bar_prop.value, ',');
-			var counter_size = _this._calcualte_box_size(counter, frame);
+			// var counter = _this._create_counter_box();
+			// counter.innerHTML = _this._num_to_separated_str(right_bar_prop.value, ',');
+			// var counter_size = _this._calcualte_box_size(counter, frame);
 
-			var suffix = _this._create_counter_suffix_box();
-			suffix.innerHTML = param.count_suffix;
-			var suffix_size = _this._calcualte_box_size(suffix, frame);
+			// var suffix = _this._create_counter_suffix_box();
+			// suffix.innerHTML = param.count_suffix;
+			// var suffix_size = _this._calcualte_box_size(suffix, frame);
 			
-			var counter_top = Math.floor((param.height - counter_size.height) / 2);
-			var counter_left = param.width - (counter_size.width + param.count_suffix_margin + suffix_size.width + param.count_margin);
-			counter.style.top = _this._to_pixcel_num_str(counter_top);
-			counter.style.left = _this._to_pixcel_num_str(counter_left);
+			// var counter_top = Math.floor((param.height - counter_size.height) / 2);
+			// var counter_left = param.width - (counter_size.width + param.count_suffix_margin + suffix_size.width + param.count_margin);
+			// counter.style.top = _this._to_pixcel_num_str(counter_top);
+			// counter.style.left = _this._to_pixcel_num_str(counter_left);
 
-			var suffix_top = counter_size.height - suffix_size.height + counter_top;
-			var suffix_left = param.width - (suffix_size.width + param.count_margin);
-			suffix.style.top = _this._to_pixcel_num_str(suffix_top);
-			suffix.style.left = _this._to_pixcel_num_str(suffix_left);
+			// var suffix_top = counter_size.height - suffix_size.height + counter_top;
+			// var suffix_left = param.width - (suffix_size.width + param.count_margin);
+			// suffix.style.top = _this._to_pixcel_num_str(suffix_top);
+			// suffix.style.left = _this._to_pixcel_num_str(suffix_left);
 
-			frame.appendChild(counter);
-			frame.appendChild(suffix);
+			// frame.appendChild(counter);
+			// frame.appendChild(suffix);
 
-		};
+		// };
 
-		lfn();
-		rfn();
+		// lfn();
+		// rfn();
 
-	}
+	// }
 
 	prototype._prepare_left_static_count = function(frame, left_bar_prop) {
 
@@ -462,9 +437,11 @@ if (typeof(fedecade) == 'undefined') {
 		suffix.style.left = _this._to_pixcel_num_str(suffix_left);
 
 		counter.style.width = this._to_pixcel_num_str(counter_size.width);
-		counter.innerHTML = '';
+		
+		var shadowed_counter = (param.shadow) ? (this._create_shadowed_counter(counter, {top: counter_top, left: counter_left})) : (null);
+		var shadowed_counter_suffix = (param.shadow) ? (this._create_shadowed_counter_suffix(suffix, {top: suffix_top, left: suffix_left})) : (null);
 
-		return {counter: counter, suffix: suffix};
+		return {counter: counter, suffix: suffix, shadowed_counter: shadowed_counter, shadowed_counter_suffix: shadowed_counter_suffix};
 
 	}
 
@@ -492,10 +469,11 @@ if (typeof(fedecade) == 'undefined') {
 		suffix.style.left = _this._to_pixcel_num_str(suffix_left);
 
 		counter.style.width = this._to_pixcel_num_str(counter_size.width);
-		counter.innerHTML = '';
 
-		return {counter: counter, suffix: suffix};
-		
+		var shadowed_counter = (param.shadow) ? (this._create_shadowed_counter(counter, {top: counter_top, left: counter_left})) : (null);
+		var shadowed_counter_suffix = (param.shadow) ? (this._create_shadowed_counter_suffix(suffix, {top: suffix_top, left: suffix_left})) : (null);
+
+		return {counter: counter, suffix: suffix, shadowed_counter: shadowed_counter, shadowed_counter_suffix: shadowed_counter_suffix};
 	}
 
 	prototype._draw_static_pointer = function(top_position) {
@@ -561,15 +539,7 @@ if (typeof(fedecade) == 'undefined') {
 
 	};
 
-	prototype._num_to_separated_str = function(num, delim) {
-
-		var sep = String(num);
-
-		return sep.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + delim);
-
-	};	
-
-	prototype._slide_animated_left_bar = function(bar, bar_prop, counter) {
+	prototype._slide_animated_left_bar = function(bar, bar_prop, counter, shadows) {
 
 		bar.style.left = this._to_pixcel_num_str(bar_prop.width * -1);
 
@@ -600,7 +570,7 @@ if (typeof(fedecade) == 'undefined') {
 
 			bar.style.left = _this._to_pixcel_num_str((bar_prop.width * (100 - curpos) / 100) * -1);
 
-			_this._draw_counter(counter, Math.floor(curpos * bar_prop.value / 100));
+			_this._draw_counter(counter, Math.floor(curpos * bar_prop.value / 100), shadows);
 
       if (curpos != maxpos) {
         setTimeout(fn, 10);
@@ -616,7 +586,7 @@ if (typeof(fedecade) == 'undefined') {
 
 	};
 
-	prototype._slide_animated_right_bar = function(bar, bar_prop, counter) {
+	prototype._slide_animated_right_bar = function(bar, bar_prop, counter, shadows) {
 
 		bar.style.left = this._to_pixcel_num_str(bar_prop.left + bar_prop.width);
 
@@ -647,7 +617,7 @@ if (typeof(fedecade) == 'undefined') {
 
 			bar.style.left = _this._to_pixcel_num_str((bar_prop.left + bar_prop.width) - (bar_prop.width * curpos / 100));
 
-			_this._draw_counter(counter, Math.floor(curpos * bar_prop.value / 100));
+			_this._draw_counter(counter, Math.floor(curpos * bar_prop.value / 100), shadows);
 
 			if (curpos != maxpos) {
 				setTimeout(fn, 10);
@@ -744,245 +714,98 @@ if (typeof(fedecade) == 'undefined') {
 
 	};
 
-	prototype._draw_counter = function(counter, value) {
+	prototype._draw_counter = function(counter, value, shadows) {
 
 		var count = this._num_to_separated_str(value, ',');
+
 		counter.innerHTML = count;
+
+		if (this.global_params.shadow) {
+			for (var i = 0; i < shadows.length; i++) {
+				shadows[i].innerHTML = count;
+			}
+		}
 		
 	};
 
-	/*======================================================================================*/
+	prototype._create_shadowed_counter = function(counter, counter_position) {
 
-	prototype._create_pointer2 = function(position) {
-
-		var hide = '-1000px';
-		var ptrimg_w = this.global_params.pointer_img_width;
-		var ptrimg_h = this.global_params.pointer_img_height;
-		var ptrimg = new Image();
-		ptrimg.src = this.global_params.pointer_img;
-		ptrimg.style.position = 'relative';
-		ptrimg.style.width = this._num_to_cssstr(ptrimg_w, 'px');
-		ptrimg.style.height = this._num_to_cssstr(ptrimg_h, 'px');
-		ptrimg.style.top = hide;
-		ptrimg.style.left = this._num_to_cssstr(position - ptrimg_w / 2, 'px');
-		
-		return ptrimg;
-	};
-
-	prototype._slide_pointer2 = function(ptr) {
-
-		var curpos = this.global_params.pointer_depth * -4;
-		var minpos = 0;
-		var maxpos = 0;
-		var delay = 0;
-		var fmt = this._num_to_cssstr;
-		var interval = 1;
-		var remain = 3;
-		var egd = [this.global_params.pointer_depth * 1.5, this.global_params.pointer_depth * -0.5, 0];
-		var dly = this.global_params.pointer_fall_speed;
-		var _this = this;
-
-		var fnd = function() {
-			if (remain == 0) { return; }
-			maxpos = egd[3-remain];
-			delay = dly[3-remain];
-			if (curpos < maxpos) {
-				curpos += 1;
-				if (curpos > maxpos) {
-					curpos = maxpos;
-				}
-			}
-			ptr.style.top = fmt(curpos, 'px');
-			if (curpos != maxpos) {
-				setTimeout(fnd, interval *= delay);
-			} else {
-				setTimeout(fnu, interval *= delay);
-				remain--;
-			}
-		};
-		var fnu = function() {
-			if (remain == 0) { return; }
-			minpos = egd[3-remain];
-			delay = dly[3-remain];
-			if (curpos > minpos) {
-				curpos -= 1;
-				if (curpos > minpos) {
-					curpos = minpos;
-				}
-			}
-			ptr.style.top = fmt(curpos, 'px');
-			if (curpos != minpos) {
-				setTimeout(fnu, interval *= delay);
-			} else {
-				setTimeout(fnd, interval *= delay);
-				remain--;
-			}
-		};
-
-		var boot = function() {
-			if (_this.bar_draw_finished.left == true && _this.bar_draw_finished.right == true) {
-				fnd();
-			} else {
-				setTimeout(boot, 10);
-			}
-		};
-
-		boot();
-	};
-
-  prototype._create_pointerframe = function() {
-
-    var frame = document.createElement('DIV'); 
-    
-    var parm = this.global_params;
-
-		frame.style.marginTop = this._num_to_cssstr((this.global_params.height + this.global_params.pointer_img_height - this.global_params.pointer_depth) * -1, 'px');
-    frame.style.width = this._num_to_cssstr(parm.width, 'px');
-    frame.style.position = 'relative';
-    frame.style.border = 'none';
-
-    return frame;
-  };
-
-	prototype._create_barframe = function() {
-
-		var frame = document.createElement('DIV'); 
-		
 		var parm = this.global_params;
 
-		frame.style.marginTop = this._num_to_cssstr(this.global_params.pointer_img_height, 'px');
-		frame.style.width = this._num_to_cssstr(parm.width, 'px');
-		frame.style.height = this._num_to_cssstr(parm.height, 'px');
-		frame.style.position = 'relative';
-		frame.style.overflow = 'hidden';
-		frame.style.borderWidth = parm.frame_border_width;
-		frame.style.borderColor = parm.frame_border_color;
-		frame.style.borderStyle = parm.frame_border_style;
-		frame.style.backgroundColor = this.global_params.background_color;
+		var cntshadow = [];
 
-		return frame;
+		var diff = [[0,1.5],[0,-1.5],[1.5,0],[1.5,1.5],[1.5,-1.5],[-1.5,0],[-1.5,1.5],[-1.5,-1.5]];
+		
+		for (var i = 0; i < diff.length; i++) {
+
+			var shadow = counter.cloneNode(true);
+
+			shadow.style.margin = '0px';
+			shadow.style.padding = '0px';
+			shadow.style.position = 'absolute';
+			shadow.style.color = parm.count_shadow_color;
+			shadow.style.fontFamily = parm.count_font;
+			shadow.style.fontSize = parm.count_size;
+			shadow.style.left = (counter_position.left + diff[i][0]) + 'px';
+			shadow.style.top = (counter_position.top + diff[i][1]) + 'px';
+
+			cntshadow.push(shadow);
+
+		}
+
+		return cntshadow;
+
 	};
+
+	prototype._create_shadowed_counter_suffix = function(counter, counter_position) {
+
+		var parm = this.global_params;
+
+		var cntshadow = [];
+
+		var diff = [[0,1.5],[0,-1.5],[1.5,0],[1.5,1.5],[1.5,-1.5],[-1.5,0],[-1.5,1.5],[-1.5,-1.5]];
+		
+		for (var i = 0; i < diff.length; i++) {
+
+			var shadow = counter.cloneNode(true);
+
+			shadow.style.margin = '0px';
+			shadow.style.padding = '0px';
+			shadow.style.position = 'absolute';
+			shadow.style.color = parm.count_shadow_color;
+			shadow.style.fontFamily = parm.count_font;
+			shadow.style.fontSize = parm.count_suffix_size;
+			shadow.style.left = (counter_position.left + diff[i][0]) + 'px';
+			shadow.style.top = (counter_position.top + diff[i][1]) + 'px';
+
+			cntshadow.push(shadow);
+
+		}
+
+		return cntshadow;
+
+	};
+
+	/**
+	 * utility methods
+	 */
+
+	prototype._num_to_separated_str = function(num, delim) {
+
+		var sep = String(num);
+
+		return sep.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + delim);
+
+	};	
 
   prototype._num_to_cssstr = function(number, suffix) {
     return number + suffix;
   }
 
-  prototype._animate = function(bar, width, left, direction, cntbox, val, shadow) {
+	prototype._to_pixcel_num_str = function(number) {
+		return this._num_to_cssstr(number, 'px');
+	}
 
-    var speed = this.global_params.bar_speed;
-    var from = 0;
-    var to = 100;
-
-    var curper = 0;
-    var maxper = to;
-    var _this = this;
-
-    var fn = function() {
-      var diff = 0.1 * speed;
-      switch (direction) {
-        case 'increase':
-          if (curper < maxper) {
-            curper += diff;
-            if (curper > maxper) {
-              curper = maxper;
-            }
-          } else {
-            curper -= diff;
-            if (curper < maxper) {
-              curper = maxper;
-            }
-          }
-          bar.style.left = (width * (100 - curper) / 100) * -1 + "px";
-          _this._draw_count(cntbox, Math.floor(curper * val / 100), shadow);
-          break;
-        case 'decrease':
-          if (curper > maxper) {
-            curper -= diff;
-            if (curper < maxper) {
-              curper = maxper;
-            }
-          } else {
-            curper += diff;
-            if (curper > maxper) {
-              curper = maxper;
-            }
-          }
-          // bar.style.left = width + (width * (100 - curper) / 100) + "px";
-          bar.style.left = left - width + (width * (100 - curper) / 100) + "px";
-          _this._draw_count(cntbox, Math.floor(curper * val / 100), shadow);
-          break;
-      }
-      if (curper != maxper) {
-        setTimeout(fn, 10);
-			} else {
-				switch (direction) {
-					case 'increase':
-						_this.bar_draw_finished.left = true;
-						break;
-					case 'decrease':
-						_this.bar_draw_finished.right = true;
-						break;
-				}
-      }
-    }
-    fn();
-
-  };
-
-  // prototype._draw_static_bar = function(color, width, height, left, cntbox) {
-
-    // var parm = this.global_params;
-
-    // var bar = document.createElement('DIV');
-
-    // bar.style.width = this._num_to_cssstr(width, 'px');
-    // bar.style.height = this._num_to_cssstr(100, '%');
-    // bar.style.position = 'absolute';
-    // bar.style.left = this._num_to_cssstr(left, 'px');
-    // // bar.style.borderWidth = parm.bar_border_width + parm.bar_unit_type;
-    // // bar.style.borderStyle = parm.bar_border_style;
-    // bar.style.float = 'left';
-
-		// if (parm.bar_efect == 'gradient') {
-			// var canvas = document.createElement('CANVAS');
-			// if (canvas && canvas.getContext) {
-				// canvas.width = width;
-				// canvas.height = height;
-				// bar.appendChild(canvas);
-				// var ctx = canvas.getContext('2d');
-				// ctx.beginPath();
-				// var baseColor = this._colorcode_to_rgb(color);
-				// var color1 = this._rgb_to_cssformat(this._lighten_rgb(baseColor, -0.15));
-				// var color2 = this._rgb_to_cssformat(this._lighten_rgb(baseColor, 0));
-				// var color3 = this._rgb_to_cssformat(this._lighten_rgb(baseColor, 0.15));
-				// var grad = ctx.createLinearGradient(0, 0, 0, height);
-				// grad.addColorStop(0.0, color1);
-				// grad.addColorStop(0.4, color2);
-				// grad.addColorStop(1.0, color3);
-				// ctx.fillStyle = grad;
-				// ctx.rect(0, 0, width, height);
-				// ctx.fill();
-			// } else if (document.uniqueID) {
-				// var baseColor = this._colorcode_to_rgb(color);
-				// var color1 = this._rgb_to_csshexformat(this._lighten_rgb(baseColor, -0.15));
-				// var color2 = this._rgb_to_csshexformat(this._lighten_rgb(baseColor, 0.15));
-				// bar.style.filter = "progid:DXImageTransform.Microsoft.Gradient(GradientType=0,StartColorStr=" + color2 + ",EndColorStr=" + color1 + ")";
-			// } else {
-				// bar.style.backgroundColor = color;
-			// }
-		// } else {
-			// bar.style.backgroundColor = color;
-		// }
-
-    // // this._draw_count(cntbox, 0, shadow);
-    
-    // return bar;
-
-  // };
-
-  /***
-   * private methods
-   */
   prototype._colorcode_to_rgb = function(colorcode) {
     var rgb = {};
     var hex = colorcode.match(/\#([a-fA-F0-9]{2})([a-fA-F0-9]{2})([a-fA-F0-9]{2})$/);
@@ -1052,70 +875,40 @@ if (typeof(fedecade) == 'undefined') {
     return this._yuv_to_rgb(yuv);
   };
 
-  prototype._create_count_box = function() {
-    var parm = this.global_params;
-    var box = document.createElement('DIV');
-    box.style.margin = 0;
-    box.style.padding = 0;
-    box.style.position = 'absolute';
-    box.style.fontFamily = parm.count_font;
-    box.style.fontSize = parm.count_size;
-    box.style.color = parm.count_color;
-		// box.style.textShadow = "0 1px 1px #101010, 1px 0 1px #101010, 0 -1px 1px #101010, -1px 0 1px #101010, -1px -1px 1px #101010, 1px -1px 1px #101010, -1px 1px 1px #101010, 1px 1px 1px #101010";
-    return box;
-  };
+  // prototype._create_count_box = function() {
+    // var parm = this.global_params;
+    // var box = document.createElement('DIV');
+    // box.style.margin = 0;
+    // box.style.padding = 0;
+    // box.style.position = 'absolute';
+    // box.style.fontFamily = parm.count_font;
+    // box.style.fontSize = parm.count_size;
+    // box.style.color = parm.count_color;
+		// // box.style.textShadow = "0 1px 1px #101010, 1px 0 1px #101010, 0 -1px 1px #101010, -1px 0 1px #101010, -1px -1px 1px #101010, 1px -1px 1px #101010, -1px 1px 1px #101010, 1px 1px 1px #101010";
+    // return box;
+  // };
 
-  prototype._draw_count = function(box, count, shadow) {
-		var cnt = this._num_to_separated_str2(count, ',', this.global_params.count_suffix);
-		if (typeof(shadow) != 'undefined') {
-			for (var i = 0; i < shadow.length; i++) {
-				shadow[i].innerHTML = cnt;
-			}
-		}
-		box.innerHTML = cnt;
-  };
+  // prototype._draw_count = function(box, count, shadow) {
+		// var cnt = this._num_to_separated_str2(count, ',', this.global_params.count_suffix);
+		// if (typeof(shadow) != 'undefined') {
+			// for (var i = 0; i < shadow.length; i++) {
+				// shadow[i].innerHTML = cnt;
+			// }
+		// }
+		// box.innerHTML = cnt;
+  // };
 
-  prototype._get_box_size = function(box, frame) {
-    var vis = box.style.visible;
-    box.style.visible = "hidden";
-    frame.appendChild(box);
-    var sizes = {
-      w: box.offsetWidth,
-      h: box.offsetHeight
-    };
-    frame.removeChild(box);
-    box.style.visible = vis;
-    return sizes;
-  };
-
-	prototype._create_shadowed_number = function(cntbox, frame, cntpos) {
-		var parm = this.global_params;
-		// var diff = [[0,1],[0,-1],[1,0],[1,1],[1,-1],[-1,0],[-1,1],[-1,-1]];
-		var diff = [[0,1.5],[0,-1.5],[1.5,0],[1.5,1.5],[1.5,-1.5],[-1.5,0],[-1.5,1.5],[-1.5,-1.5]];
-		var cntshadow = [];
-		for (var i = 0; i < diff.length; i++) {
-			var shadow = cntbox.cloneNode(true);
-			shadow.style.margin = '0px';
-			shadow.style.padding = '0px';
-			shadow.style.position = 'absolute';
-			shadow.style.color = parm.count_shadow_color;
-			shadow.style.fontFamily = parm.count_font;
-			shadow.style.fontSize = parm.count_size;
-			shadow.style.left = (cntpos.left + diff[i][0]) + 'px';
-			shadow.style.top = (cntpos.top + diff[i][1]) + 'px';
-			frame.appendChild(shadow);
-			cntshadow.push(shadow);
-		}
-		return cntshadow;
-	};
-	prototype._num_to_separated_str2 = function(num, delim, suffix) {
-		var sep = String(num);
-		return sep.replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + delim) + suffix;
-	};	
-
-
-	prototype._to_pixcel_num_str = function(number) {
-		return this._num_to_cssstr(number, 'px');
-	}
+  // prototype._get_box_size = function(box, frame) {
+    // var vis = box.style.visible;
+    // box.style.visible = "hidden";
+    // frame.appendChild(box);
+    // var sizes = {
+      // w: box.offsetWidth,
+      // h: box.offsetHeight
+    // };
+    // frame.removeChild(box);
+    // box.style.visible = vis;
+    // return sizes;
+  // };
 
 } ());
