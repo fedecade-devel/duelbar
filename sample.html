@@ -13,14 +13,17 @@ window.onload=function() {
 			height: 60,
 			leftbar_color: '#CC0000',
 			rightbar_color: '#339933',
-			count_size: '22px',
-			border_width: '2px',
+			count_size: '24px',
+			count_suffix_size: '16px',
+			border_width: 2,
 			border_color: '#333333',
-			bar_efect: 'gradient',
+			bar_style: 'gradient',
 			animation: true
 			}
 			); 
-  duelbar.draw(1, 3);
+	if (duelbar) {
+		duelbar.draw(20000, 30000);
+	}
 }
 }) ();
 </script>
