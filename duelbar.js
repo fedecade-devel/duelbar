@@ -42,12 +42,8 @@ if (typeof(fedecade) == 'undefined') {
 			pointer_depth: 30,
 			background_color: '#C0C0C0',
 			bar_speed: 20,
-			//dist---v
-			bar_efect: 'gradient',
-			//dist---^
 			bar_style: 'gradient',
 			animation: false,
-			// pointer_fall_speed: [1.06, 1, 1.05]
 			pointer_fall_speed: [0.05, 0.75, 0.59],
 			gradient_lightness: [-0.15, 0, 0.15],
 			gradient_position: [0.0, 0.4, 1.0],
@@ -96,6 +92,9 @@ if (typeof(fedecade) == 'undefined') {
 			}
 			if (typeof(param.shadow) != 'undefined') {
 				this.global_params.shadow = param.shadow;
+			}
+			if (typeof(param.count_shadow_color) != 'undefined') {
+				this.global_params.count_shadow_color = param.count_shadow_color;
 			}
 		}
 
@@ -352,66 +351,6 @@ if (typeof(fedecade) == 'undefined') {
 		return bar;
 
 	}
-
-	// prototype._draw_static_count = function(frame, left_bar_prop, right_bar_prop) {
-
-		// var param = this.global_params;
-		// var _this = this;
-
-		// var lfn = function() {
-
-			// var counter = _this._create_counter_box();
-			// counter.innerHTML = _this._num_to_separated_str(left_bar_prop.value, ',');
-			// var counter_size = _this._calcualte_box_size(counter, frame);
-			
-			// var suffix = _this._create_counter_suffix_box();
-			// suffix.innerHTML = param.count_suffix;
-			// var suffix_size = _this._calcualte_box_size(suffix, frame);
-
-			// var counter_top = Math.floor((param.height - counter_size.height) / 2);
-			// var counter_left = param.count_margin;
-			// counter.style.top = _this._to_pixcel_num_str(counter_top);
-			// counter.style.left = _this._to_pixcel_num_str(counter_left);
-
-			// var suffix_top = counter_size.height - suffix_size.height + counter_top;
-			// var suffix_left = counter_size.width + counter_left + param.count_suffix_margin
-			// suffix.style.top = _this._to_pixcel_num_str(suffix_top);
-			// suffix.style.left = _this._to_pixcel_num_str(suffix_left);
-
-			// frame.appendChild(counter);
-			// frame.appendChild(suffix);
-
-		// };
-
-		// var rfn = function() {
-
-			// var counter = _this._create_counter_box();
-			// counter.innerHTML = _this._num_to_separated_str(right_bar_prop.value, ',');
-			// var counter_size = _this._calcualte_box_size(counter, frame);
-
-			// var suffix = _this._create_counter_suffix_box();
-			// suffix.innerHTML = param.count_suffix;
-			// var suffix_size = _this._calcualte_box_size(suffix, frame);
-			
-			// var counter_top = Math.floor((param.height - counter_size.height) / 2);
-			// var counter_left = param.width - (counter_size.width + param.count_suffix_margin + suffix_size.width + param.count_margin);
-			// counter.style.top = _this._to_pixcel_num_str(counter_top);
-			// counter.style.left = _this._to_pixcel_num_str(counter_left);
-
-			// var suffix_top = counter_size.height - suffix_size.height + counter_top;
-			// var suffix_left = param.width - (suffix_size.width + param.count_margin);
-			// suffix.style.top = _this._to_pixcel_num_str(suffix_top);
-			// suffix.style.left = _this._to_pixcel_num_str(suffix_left);
-
-			// frame.appendChild(counter);
-			// frame.appendChild(suffix);
-
-		// };
-
-		// lfn();
-		// rfn();
-
-	// }
 
 	prototype._prepare_left_static_count = function(frame, left_bar_prop) {
 
@@ -874,41 +813,5 @@ if (typeof(fedecade) == 'undefined') {
     yuv.y = yuv.y + gainrate * 256;
     return this._yuv_to_rgb(yuv);
   };
-
-  // prototype._create_count_box = function() {
-    // var parm = this.global_params;
-    // var box = document.createElement('DIV');
-    // box.style.margin = 0;
-    // box.style.padding = 0;
-    // box.style.position = 'absolute';
-    // box.style.fontFamily = parm.count_font;
-    // box.style.fontSize = parm.count_size;
-    // box.style.color = parm.count_color;
-		// // box.style.textShadow = "0 1px 1px #101010, 1px 0 1px #101010, 0 -1px 1px #101010, -1px 0 1px #101010, -1px -1px 1px #101010, 1px -1px 1px #101010, -1px 1px 1px #101010, 1px 1px 1px #101010";
-    // return box;
-  // };
-
-  // prototype._draw_count = function(box, count, shadow) {
-		// var cnt = this._num_to_separated_str2(count, ',', this.global_params.count_suffix);
-		// if (typeof(shadow) != 'undefined') {
-			// for (var i = 0; i < shadow.length; i++) {
-				// shadow[i].innerHTML = cnt;
-			// }
-		// }
-		// box.innerHTML = cnt;
-  // };
-
-  // prototype._get_box_size = function(box, frame) {
-    // var vis = box.style.visible;
-    // box.style.visible = "hidden";
-    // frame.appendChild(box);
-    // var sizes = {
-      // w: box.offsetWidth,
-      // h: box.offsetHeight
-    // };
-    // frame.removeChild(box);
-    // box.style.visible = vis;
-    // return sizes;
-  // };
 
 } ());
